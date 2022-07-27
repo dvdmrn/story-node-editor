@@ -1,0 +1,36 @@
+body{
+    margin: 0px;
+}
+
+.story-node{
+    background-color: rgb(193, 193, 193);
+    display: inline-block;
+    padding: 10px ;
+    border-radius: 5px;
+}
+
+.dialogue{
+    padding:10px;
+    border: 1px dashed rgb(14, 59, 44);
+    background-color: rgb(117, 211, 181);
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.dialogue div:nth-child(even) {
+    margin-top: 10px;
+    border-top: 1px solid rgb(67, 121, 103);
+    padding-top:10px;
+}
+
+.num-input {
+    width: 4em;
+}
+
+.options{
+    padding:10px;
+    border: 1px dashed rgb(59, 14, 36);
+    background-color: rgb(211, 117, 166);
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
