@@ -7,6 +7,7 @@ body{
     display: inline-block;
     padding: 10px ;
     border-radius: 5px;
+    margin: 15px;
 }
 
 .dialogue{
@@ -33,4 +34,8 @@ body{
     background-color: rgb(211, 117, 166);
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+#Container{
+    width: 100%;
 }
