@@ -3,7 +3,7 @@ import { Message, StoryNode, Option } from "./StoryNode.js";
 
 
 
-const parseTree = () :  void => {
+const parseTree = () :  Object => {
     const root = document.getElementById("Container") as HTMLDivElement;
     const storyNodes : NodeListOf<HTMLDivElement> = root.querySelectorAll(".story-node");
     let story : StoryNode[] = [];
@@ -37,7 +37,7 @@ const parseTree = () :  void => {
 
     const finalOutput = {"Nodes": story};
     
-    console.log(JSON.stringify(finalOutput));
+    return finalOutput;
 }
 
 

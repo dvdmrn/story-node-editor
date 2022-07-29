@@ -1,4 +1,4 @@
-var _a, _b;
+var _a;
 import { StoryNode } from "./StoryNode.js";
 import * as Component from "./Components.js";
 import { parseTree } from "./ParseStoryNodes.js";
@@ -138,6 +138,8 @@ const ConstructStoryNode = (node) => {
 };
 const renderStoryFile = (jsonString) => {
     clearScreen();
+    if (jsonString === null)
+        return;
     try {
         const nodes = JSON.parse(jsonString).Nodes;
         const container = document.getElementById("Container");
@@ -150,37 +152,41 @@ const renderStoryFile = (jsonString) => {
         alert(`Invalid story node structure!\nError: ${error}`);
     }
 };
+const download = (filename, content) => {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+    element.setAttribute('download', filename);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+};
 // connect to listeners -------------------------------
 idField === null || idField === void 0 ? void 0 : idField.addEventListener('input', bubbleUpId);
-// const addDiaButton = document.getElementById("add-dialogue") as HTMLButtonElement;
-// addDiaButton.onclick = () => addDialogue(document.getElementById("sn-dialogue") as HTMLDivElement);
-// const removeButton =  document.getElementById("sn-remove-button") as HTMLButtonElement;
-// removeButton.onclick = e => removeField(e);
 const addStoryNodeButton = document.getElementById("new-story-node");
 addStoryNodeButton.onclick = addSN;
 const downloadJson = document.getElementById("download-json");
-downloadJson.onclick = parseTree;
-const uploadButton = document.getElementById("file-upload");
+downloadJson.onclick = () => { download("dialogue.json", JSON.stringify(parseTree())); };
+// const uploadButton =  document.getElementById("file-upload") as HTMLButtonElement;
 (_a = document.getElementById("file-upload")) === null || _a === void 0 ? void 0 : _a.addEventListener('change', e => { readFile(e, (x) => renderStoryFile(x)); }, false);
-// testing story node construction from json -------------
-const test = JSON.parse(`{
-    "Id": "test-target",
-    "Messages": [{
-        "Content": "mvp",
-        "Delay": 0,
-        "Sender": "Self"
-    }],
-    "Options": [{
-        "OptionText": "!DEFAULT",
-        "GoTo": "XYZ"
-    }]
-}`);
-(_b = document.getElementById("Container")) === null || _b === void 0 ? void 0 : _b.appendChild(ConstructStoryNode(test));
-// json obj
-const nodes = [new StoryNode(""), new StoryNode("")];
-console.log(JSON.stringify(nodes));
-/* -------- testing line drawing -------------- */
-const tgt = document.getElementById("test-target");
-console.log(tgt === null || tgt === void 0 ? void 0 : tgt.getBoundingClientRect());
-const source = document.getElementById("sn-option-1");
-// the problem: SVG size is too smol?
+const clearPageButton = document.getElementById("clear-page");
+clearPageButton.onclick = () => {
+    const choice = confirm("really clear the screen? All nodes will be lost!");
+    choice && clearScreen();
+};
+// autosave
+// goal: each event resets a timer. When timeout happens, we autosave to localStorage
+const saveState = () => {
+    console.log("state saved!");
+    localStorage.setItem("save-state", JSON.stringify(parseTree()));
+};
+let saveTimeout = window.setTimeout(saveState, 1000);
+const resetTimeout = () => {
+    window.clearTimeout(saveTimeout);
+    saveTimeout = window.setTimeout(saveState, 1000);
+};
+window.addEventListener("keydown", e => {
+    resetTimeout();
+});
+window.onclick = resetTimeout;
+window.onload = () => renderStoryFile(localStorage.getItem("save-state"));

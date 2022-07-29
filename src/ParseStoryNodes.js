@@ -27,6 +27,6 @@ const parseTree = () => {
         story.push(sn);
     });
     const finalOutput = { "Nodes": story };
-    console.log(JSON.stringify(finalOutput));
+    return finalOutput;
 };
 export { parseTree };
