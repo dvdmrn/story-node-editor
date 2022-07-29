@@ -8,6 +8,7 @@ body{
     padding: 10px ;
     border-radius: 5px;
     margin: 15px;
+    position: relative;
 }
 
 .dialogue{
@@ -18,12 +19,15 @@ body{
     margin-bottom: 10px;
 }
 
-.dialogue div:nth-child(even) {
+.dialogue div:not(:first-child) {
     margin-top: 10px;
     border-top: 1px solid rgb(67, 121, 103);
     padding-top:10px;
 }
 
+.textbox {
+    position: relative;
+}
 .num-input {
     width: 4em;
 }
@@ -36,6 +40,71 @@ body{
     margin-bottom: 10px;
 }
 
+.options div:not(:first-child) {
+    margin-top: 10px;
+    border-top: 1px solid rgb(121, 67, 67);
+    padding-top:10px;
+}
+
+.option{
+    position: relative;
+}
+
 #Container{
     width: 100%;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.svg-line{
+    left: 0px;
+    top: 0px;
+    position:absolute;
+    width:100%;
+    height:100%;
+    pointer-events: none;
+}
+
+.remove-node{
+    position:absolute;
+    top: 0;
+    right: 0;
+    margin-right: 0px;
+    padding: 10px;
+    transform: rotate(45deg);
+}
+
+#menu{
+    position: fixed;
+    top: 0;
+    right: 0;
+    margin:10px;
+    border: 2px dotted grey;
+    padding : 10px;
+}
+
+.remove-property{
+    position: absolute;
+    top:0;
+    right:0;
+    transform: rotate(45deg);
+}
+
+.dialogue-style-hack{
+    padding:0px;
+    margin: 0px;
+}
+
+body{
+    background-color: rgb(34, 44, 53);
+}
+
+.file-upload{
+    color:aliceblue;
+    width: 10px;
+}
+
+input[type="file"] {
+    color: aliceblue;
 }

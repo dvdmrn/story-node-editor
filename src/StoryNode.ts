@@ -25,8 +25,8 @@ class StoryNode {
     Messages: Message[];
     Options: Option[];
 
-    constructor(){
-        this.Id = "ass";
+    constructor(id : string){
+        this.Id = id;
         this.Messages = [];
         this.Options = [];
     }
