@@ -3,7 +3,6 @@ import * as Component from "./Components.js";
 import { parseTree } from "./ParseStoryNodes.js";
 import { readFile } from "./Upload.js";
 
-const worl = 'hi';
 const alphanumericChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 function storynodeIdHash() : string {
@@ -17,6 +16,29 @@ function storynodeIdHash() : string {
     return hash;
 }
 
+
+const drawLine = (startElement : HTMLDivElement, endElement : HTMLDivElement) : void => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.classList.add("svg-line");
+    svg.id = "connecting-line";
+
+    svg.style.height = document.getElementById("Container")!.clientHeight.toString()+"px";
+    svg.style.width = document.getElementById("Container")!.clientWidth.toString()+"px";
+   
+    // 
+    const newLine = document.createElementNS('http://www.w3.org/2000/svg','line');
+    newLine.setAttribute('id','line2');
+    newLine.setAttribute('x1',(startElement.getBoundingClientRect().x + startElement.offsetWidth + window.scrollX).toString());
+    newLine.setAttribute('y1',(startElement.getBoundingClientRect().y + startElement.offsetHeight / 2 + window.scrollY).toString());
+    newLine.setAttribute('x2',(endElement.getBoundingClientRect().left + window.scrollX + endElement.offsetWidth / 2).toString());
+    newLine.setAttribute('y2',(endElement.getBoundingClientRect().top + window.scrollY).toString());
+    newLine.setAttribute("stroke", "#ffbbff");
+    newLine.setAttribute("opacity", "0.9");
+    newLine.setAttribute("stroke-width", "2px");
+    svg.append(newLine);
+    document.getElementById("Container")?.appendChild(svg);
+}
+
 function setStoryNodeHash(id: string) : void{
     const textField : HTMLInputElement = document.getElementById(id) as HTMLInputElement;
     textField.value = "@"+storynodeIdHash();
@@ -28,8 +50,8 @@ const connectRemoveButton = (parent : HTMLDivElement) : void => {
     removeMsgBtn.onclick = e => removeField(e);
 }
 
-const addDialogue = (root : HTMLDivElement) : void => {
-    const dialogue = Component.TextBox("Ina", "", 0) as HTMLDivElement;
+const addDialogue = (root : HTMLDivElement, sender : string, text : string, delay : number) : void => {
+    const dialogue = Component.TextBox(sender, text, delay) as HTMLDivElement;
     connectRemoveButton(dialogue);    
     root.appendChild(dialogue);
 }
@@ -44,13 +66,46 @@ const addSN = () : void => {
     document.getElementById("Container")?.appendChild(ConstructStoryNode(new StoryNode("")));
 }
 
-const addOption = (root : HTMLDivElement) : void => {
-    const option =  Component.OptionBox("!DEFAULT", "Node_ID") as HTMLDivElement;
-    connectRemoveButton(option);
-    root.appendChild(option);
-
+const gotoLink = (e : Event) : void => {
+    const source : HTMLDivElement = e.target as HTMLDivElement;
+    const targetIdInput : HTMLInputElement = source.querySelector(".goto-val") as HTMLInputElement;
+    const targetId : string = targetIdInput?.value;
+    const target : HTMLDivElement = document.getElementById(targetId) as HTMLDivElement;
+    if(target===null) return;
+    console.log(`found target: ${target}`);
+    drawLine(source, target);
 }
 
+const addOption = (root : HTMLDivElement, optionText : string, goto : string) : void => {
+    const option =  Component.OptionBox(optionText, goto) as HTMLDivElement;
+    connectRemoveButton(option);
+    root.appendChild(option);
+    option.onmouseenter = e => {
+        const line = document.getElementById("connecting-line");
+        if(line != undefined){
+            line.outerHTML = "";
+        }
+        gotoLink(e)
+    };
+
+    const gotoText = option.querySelector(".goto-val") as HTMLInputElement;
+    gotoText.addEventListener("input", () => aestheticValidation(gotoText, gotoText.value));
+    // option.onmouseleave = () => {
+    //     const line = document.getElementById("connecting-line");
+    //     if(line != undefined){
+    //         line.outerHTML = "";
+    //     }};
+}
+
+const aestheticValidation = (source : HTMLInputElement, target : string) => {
+    const targetElement = document.getElementById(target);
+    if(targetElement === null){
+        source.classList.add("invalid-field")
+    }
+    else{
+        source.classList.remove("invalid-field");
+    }
+}
 
 const removeSN = (sn : HTMLDivElement) : void => {
     if(confirm("really remove story node?")){
@@ -84,25 +139,20 @@ const ConstructStoryNode = (node : StoryNode) : Node => {
     
     const messages = storyNode.querySelector("#sn-messages") as HTMLDivElement;
     node.Messages.forEach(msg => {
-        let message = Component.TextBox(msg.Sender, msg.Content, msg.Delay) as HTMLDivElement;
-        connectRemoveButton(message);
-
-        messages.appendChild(message);
+        addDialogue(messages, msg.Sender, msg.Content, msg.Delay)
     });
 
     const options = storyNode.querySelector("#sn-options") as HTMLDivElement;
     node.Options.forEach(option => {
-        let opt = Component.OptionBox(option.OptionText, option.GoTo) as HTMLDivElement;
-        connectRemoveButton(opt);
-        options.appendChild(opt);
+        addOption(options, option.OptionText, option.GoTo);        
     })
     
 
     const addDiaBtn = storyNode.querySelector("#sn-add-dialogue") as HTMLButtonElement;
-    addDiaBtn.onclick = () => addDialogue(messages);
+    addDiaBtn.onclick = () => addDialogue(messages, "Self", "", 0);
 
     const addOptionBtn = storyNode.querySelector("#sn-add-option") as HTMLButtonElement;
-    addOptionBtn.onclick = () => addOption(options);
+    addOptionBtn.onclick = () => addOption(options, "!DEFAULT", "node_id");
 
     const removeSNbtn = storyNode.querySelector(".remove-node") as HTMLButtonElement;
     removeSNbtn.onclick = () => removeSN(storyNode);
@@ -112,11 +162,17 @@ const ConstructStoryNode = (node : StoryNode) : Node => {
 
 const renderStoryFile = (jsonString : string) => {
     clearScreen();
-    const story : StoryNode[] = JSON.parse(jsonString).Nodes as StoryNode[];
-    const container = document.getElementById("Container") as HTMLDivElement;
-    story.forEach(sn => {
-        container.appendChild(ConstructStoryNode(sn))
-    });;
+    
+    try {
+        const nodes : StoryNode[] = JSON.parse(jsonString).Nodes as StoryNode[];
+        const container = document.getElementById("Container") as HTMLDivElement;
+        nodes.forEach(sn => {
+            container.appendChild(ConstructStoryNode(sn))
+        });;
+        
+    } catch (error) {   
+        alert(`Invalid story node structure!\nError: ${error}`);
+    }
 }
 
 // connect to listeners -------------------------------
@@ -178,16 +234,4 @@ const source = document.getElementById("sn-option-1") as HTMLDivElement;
 
 // the problem: SVG size is too smol?
 
-const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-svg.classList.add("svg-line")
 
-const newLine = document.createElementNS('http://www.w3.org/2000/svg','line');
-newLine.setAttribute('id','line2');
-newLine.setAttribute('x1',(source.getBoundingClientRect().x + source.offsetWidth).toString());
-newLine.setAttribute('y1',(source.getBoundingClientRect().y + source.offsetHeight / 2).toString());
-newLine.setAttribute('x2',(tgt.getBoundingClientRect().left + window.scrollX + tgt.offsetWidth / 2).toString());
-newLine.setAttribute('y2',(tgt.getBoundingClientRect().top + window.scrollY).toString());
-newLine.setAttribute("stroke", "#ff0000")
-newLine.setAttribute("opacity", "0.5")
-svg.append(newLine);
-document.getElementById("Container")?.appendChild(svg);
