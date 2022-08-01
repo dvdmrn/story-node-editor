@@ -6,6 +6,8 @@ const TextBox = (sender, dialogue, delay) => {
                            <select class="msg-sender">
                                <option value="Self" ${sender == "Self" ? "selected" : ""}>Self</option>
                                <option value="Ina" ${sender == "Ina" ? "selected" : ""}>Ina</option>
+                               <option value="!DELAY" ${sender == "!DELAY" ? "selected" : ""}>!DELAY</option>
+
                            </select>
                            delay: <input class="num-input msg-delay" type="number" min="0" max="99" style="width:3em" step="0.5" value=${delay}></input>s <br>
                            dialogue: <br><textarea class="msg-content" rows=2 cols=37>${dialogue}</textarea>

@@ -44,6 +44,19 @@ const connectRemoveButton = (parent) => {
 const addDialogue = (root, sender, text, delay) => {
     const dialogue = Component.TextBox(sender, text, delay);
     connectRemoveButton(dialogue);
+    const senderDropdown = dialogue.querySelector(".msg-sender");
+    const textAreaRef = dialogue.querySelector(".msg-content");
+    if (senderDropdown.value == "!DELAY")
+        textAreaRef.disabled = true;
+    senderDropdown.addEventListener("change", e => {
+        const source = e.target;
+        if (source.value == "!DELAY") {
+            textAreaRef.disabled = true;
+        }
+        else {
+            textAreaRef.disabled = false;
+        }
+    });
     root.appendChild(dialogue);
 };
 const removeField = (e) => {
@@ -79,11 +92,6 @@ const addOption = (root, optionText, goto) => {
     };
     const gotoText = option.querySelector(".goto-val");
     gotoText.addEventListener("input", () => aestheticValidation(gotoText, gotoText.value));
-    // option.onmouseleave = () => {
-    //     const line = document.getElementById("connecting-line");
-    //     if(line != undefined){
-    //         line.outerHTML = "";
-    //     }};
 };
 const aestheticValidation = (source, target) => {
     const targetElement = document.getElementById(target);
@@ -184,6 +192,12 @@ let saveTimeout = window.setTimeout(saveState, 1000);
 const resetTimeout = () => {
     window.clearTimeout(saveTimeout);
     saveTimeout = window.setTimeout(saveState, 1000);
+};
+const getSender = (sender) => {
+    console.log(sender.value);
+    return sender.value;
+    // TODO:
+    // grey the textbox when sender == !DELAY
 };
 window.addEventListener("keydown", e => {
     resetTimeout();

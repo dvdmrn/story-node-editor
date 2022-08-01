@@ -52,7 +52,20 @@ const connectRemoveButton = (parent : HTMLDivElement) : void => {
 
 const addDialogue = (root : HTMLDivElement, sender : string, text : string, delay : number) : void => {
     const dialogue = Component.TextBox(sender, text, delay) as HTMLDivElement;
-    connectRemoveButton(dialogue);    
+    connectRemoveButton(dialogue);
+    const senderDropdown = dialogue.querySelector(".msg-sender") as HTMLSelectElement;
+    const textAreaRef = dialogue.querySelector(".msg-content") as HTMLTextAreaElement;
+
+    if(senderDropdown.value == "!DELAY") textAreaRef.disabled = true;
+    senderDropdown.addEventListener("change", e => {
+        const source = e.target as HTMLSelectElement;
+        if(source.value == "!DELAY"){
+            textAreaRef.disabled = true;
+        }else{
+            textAreaRef.disabled = false;
+        }
+    }); 
+
     root.appendChild(dialogue);
 }
 
@@ -90,11 +103,6 @@ const addOption = (root : HTMLDivElement, optionText : string, goto : string) : 
 
     const gotoText = option.querySelector(".goto-val") as HTMLInputElement;
     gotoText.addEventListener("input", () => aestheticValidation(gotoText, gotoText.value));
-    // option.onmouseleave = () => {
-    //     const line = document.getElementById("connecting-line");
-    //     if(line != undefined){
-    //         line.outerHTML = "";
-    //     }};
 }
 
 const aestheticValidation = (source : HTMLInputElement, target : string) => {
@@ -139,7 +147,7 @@ const ConstructStoryNode = (node : StoryNode) : Node => {
     
     const messages = storyNode.querySelector("#sn-messages") as HTMLDivElement;
     node.Messages.forEach(msg => {
-        addDialogue(messages, msg.Sender, msg.Content, msg.Delay)
+        addDialogue(messages, msg.Sender, msg.Content, msg.Delay);
     });
 
     const options = storyNode.querySelector("#sn-options") as HTMLDivElement;
@@ -219,6 +227,14 @@ const resetTimeout = () => {
     window.clearTimeout(saveTimeout);
     saveTimeout = window.setTimeout(saveState, 1000);
 }
+
+const getSender = (sender : HTMLSelectElement) : string => {
+    console.log(sender.value);
+    return sender.value;
+    // TODO:
+    // grey the textbox when sender == !DELAY
+}
+
 
 
 window.addEventListener("keydown", e=>{
